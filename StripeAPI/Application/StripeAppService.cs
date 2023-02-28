@@ -49,9 +49,31 @@ namespace StripeAPI.Application
             return new StripeCustomer(createdCustomer.Name, createdCustomer.Email, createdCustomer.Id);
         }
 
-        public Task<StripePayment> AddStripePaymentAsync(AddStripePayment payment, CancellationToken ct)
+        public async Task<StripePayment> AddStripePaymentAsync(AddStripePayment payment, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            // Set the options for the payment we would like to create at Stripe
+            ChargeCreateOptions paymentOptions = new ChargeCreateOptions
+            {
+                Customer = payment.CustomerId,
+                ReceiptEmail = payment.ReceiptEmail,
+                Description = payment.Description,
+                Currency = payment.Currency,
+                Amount = payment.Amount
+            };
+
+            // Create the payment
+            var createdPayment = await _chargeService.CreateAsync(paymentOptions, null, ct);
+
+            // Return the payment to requesting method
+            return new StripePayment
+              (
+              createdPayment.CustomerId,
+              createdPayment.ReceiptEmail,
+              createdPayment.Description,
+              createdPayment.Currency,
+              createdPayment.Amount,
+              createdPayment.Id
+              );
         }
     }
 }
